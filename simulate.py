@@ -1,14 +1,12 @@
 import numpy as np
 from scipy.optimize import minimize
 
-
 def maximize(*args, **kwargs):
   neg_func = lambda *lambda_args: -args[0](*lambda_args)
   sol = minimize(neg_func, *(args[1:]), **kwargs)
   sol.fun = -sol.fun
   sol.jac = -sol.jac
   return sol
-
 
 
 class simulate_SES:
