@@ -69,7 +69,7 @@ def SES_model(x):
 problem = {
   'num_vars': 7,
   'names': ['r','c','d','g','h','m','p'], #'k', 'a','b1', 'b2',
-  'bounds': [[1.5, 100],[0, 0.5],[95, 225],[0, 0.02],[0, 120],[0.3, 12.3],[2.7,18]]
+  'bounds': [[1.5, 10.5],[0, 0.05],[95, 225],[0, 0.02],[0, 120],[0.3, 12.3],[2.7,18]]
 } # changed the bounds of the first two parameters to match the paper - is this right?
 
 # Generate samples
