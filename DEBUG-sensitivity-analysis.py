@@ -71,7 +71,7 @@ b = [(0.50*i, 1.50*i) for i in x]
 problem = {
   'num_vars': 7,
   'names': ['r','c','d','g','h','m','p'], #'k', 'a','b1', 'b2',
-  'bounds': b
+  'bounds': [[5,10.5],[0, 0.05],[95, 175],[0, 0.015],[0, 120],[0.3, 1.0],[2.7,3.3]]
 } # changed the bounds of the first two parameters to match the paper - is this right?
 
 # Generate samples
