@@ -3,12 +3,7 @@ from SALib.analyze import sobol
 import numpy as np
 from simulate import simulate_SES
 import pyDOE as doe
-from mpi4py import MPI
-np.seterr(divide='ignore', invalid='ignore') # avoid warnings about div by zero in optimization
 
-comm = MPI.COMM_WORLD
-
-np.random.seed(1)
 
 def SES_model(x):
 
@@ -59,15 +54,20 @@ def SES_model(x):
       eq_condition[n] = 1
 
     U_array[n] = U[-1] #np.mean(U) # population (pseudo for resilience)
+    print('Run %d: Eq: %d, Pop: %0.2f' % (n, eq_condition[n], U_array[n]))
 
   resilience = np.sum(eq_condition) / num_points # proportion of states that lead to non-collapse equilibrium
   equity = np.mean(U_array) # total well being  
 
+  print('Res: %0.2f, Eq: %0.2f' % (resilience, equity))
   return resilience, equity
 
-# param values from paper
+# Paper values
 x = [10.0, 0.05, 100, 0.01, 0.06, 0.8, 3]
-b = [(0.50*i, 1.50*i) for i in x] # sample +/- 50%
+# Y = SES_model(x)
+# [5.72753906e+00 4.23339844e-02 1.29912109e+02 8.53515625e-03
+#  5.85937500e-01 8.18671875e+00 1.48772461e+01]
+b = [(0.50*i, 1.50*i) for i in x]
 problem = {
   'num_vars': 7,
   'names': ['r','c','d','g','h','m','p'], #'k', 'a','b1', 'b2',
@@ -76,35 +76,13 @@ problem = {
 
 # Generate samples
 param_values = saltelli.sample(problem, 1000, calc_second_order=False)
-N = len(param_values) # 1000 * (k+2) = 9000 total model runs
-model_runs_per_proc = int(N / comm.size)
-start_index = model_runs_per_proc * comm.rank
-end_index = model_runs_per_proc * (comm.rank + 1)
-
-# Run SES Model for each parameter set, save output
-Y = np.zeros((model_runs_per_proc,2))
+i = np.random.randint(len(param_values))
+# i = np.argmin(np.mean((param_values - x)**2)**2)
+print(i)
+print(param_values[i])
+Y = SES_model(param_values[i])
 
 # Run model
-for i in range(start_index, end_index):
-  print('Processor %d: Running index %d' % (comm.rank, i), flush=True)
-  Y[i-start_index,:] = SES_model(param_values[i])
-
-comm.Barrier() # wait for all of them to finish
-Y_all = comm.gather(Y, root=0) # gather back to master node (0)
-
-# the combined results only exist on node 0, save from there
-if comm.rank==0:
-  # they gather into lists of arrays, unfortunately. fix that:
-  Y_all = np.array(Y_all).reshape((N, 2))
-  np.savetxt('param_values.csv', param_values, delimiter=',')
-  np.savetxt('outputs.csv', Y_all, delimiter=',')
-
-
-# # Perform analysis, calculate sensitivity indices
-# Si = sobol.analyze(problem, Y[:,0], 
-#                   print_to_console=True, num_resamples = 100) #1000
-# # Returns a dictionary with keys 'S1', 'S1_conf', 'ST', and 'ST_conf'
-# # (first and total-order indices with bootstrap confidence intervals)
-
-# Sii = sobol.analyze(problem, Y[:,1], 
-#                   print_to_console=True, num_resamples = 100) #1000
+# for i in range(N):
+  # Y[i,:] = SES_model(param_values[i])
+  # print(Y[i,:])
