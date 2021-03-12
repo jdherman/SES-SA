@@ -14,7 +14,12 @@ Y = np.loadtxt('outputs.csv', delimiter=',')
 # The outputs are a problem - Y[:,0] is always zero, and Y[:,1] is ~10^-200
 # this makes the sensitivity results not meaningful
 
-Si = sobol.analyze(problem, Y[:,1], 
+# sensitivity of resilience metric
+Si = sobol.analyze(problem, Y[:,0], 
+                  print_to_console=True, num_resamples = 1000, calc_second_order=False)
+
+# sensitivity of equity metric
+Sii = sobol.analyze(problem, Y[:,1], 
                   print_to_console=True, num_resamples = 1000, calc_second_order=False)
 
 # Returns a dictionary with keys 'S1', 'S1_conf', 'ST', and 'ST_conf'
