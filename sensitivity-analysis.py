@@ -73,7 +73,7 @@ problem = {
 } # changed the bounds of the first two parameters to match the paper - is this right?
 
 # Generate samples
-param_values = saltelli.sample(problem, 10000, calc_second_order=False)
+param_values = saltelli.sample(problem, 100, calc_second_order=False)
 N = len(param_values) # 10000 * (k+2) = 90000 total model runs
 model_runs_per_proc = int(N / comm.size)
 start_index = model_runs_per_proc * comm.rank
@@ -95,7 +95,7 @@ if comm.rank==0:
   # they gather into lists of arrays, unfortunately. fix that:
   Y_all = np.array(Y_all).reshape((N, 2))
   np.savetxt('param_values.csv', param_values, delimiter=',')
-  np.savetxt('outputs.csv', Y, delimiter=',')
+  np.savetxt('outputs.csv', Y_all, delimiter=',')
 
 
 # # Perform analysis, calculate sensitivity indices
